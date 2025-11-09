@@ -1,9 +1,48 @@
 name: CI Pipeline
-on: [push]
+on: [push, pull_request]
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - name: Build Docker Image
-        run: docker build -t hello-devops-app .
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: devopsdb
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+  steps:
+    - uses: actions/checkout@v5
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run Tests
+      run: |
+        pytest test_app.py -v
+
+    - name: Build Docker Image
+      run: |
+        docker build -t hello-devops .
+
+    - name: Test Docker Image
+      run: |
+        docker run -d --name test-hello-devops -p 5000:5000 hello-devops
+        sleep 10
+        curl -f http://localhost:5000/health || exit 1
+        docker stop test-hello-devops
+        docker rm test-hello-devops
