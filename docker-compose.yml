@@ -3,11 +3,13 @@ services:
     build: .
     ports:
       - "5000:5000"
-    environment:
-      - DB_HOST=db
-      - DB_NAME=devopsdb
-      - DB_USER=postgres
-      - DB_PASSWORD=password
+    env_file:
+      - .env
+    # environment:
+    #   - DB_HOST=db
+    #   - DB_NAME=devopsdb
+    #   - DB_USER=postgres
+    #   - DB_PASSWORD=password
     depends_on:
       - db
   db:
