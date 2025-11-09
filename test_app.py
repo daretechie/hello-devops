@@ -9,7 +9,7 @@ def client():
 def test_hello_endpoint(client):
   response = client.get('/')
   assert response.status_code == 200
-  assert b'Hello DevOps World!' in response.data
+  assert b'Hello, DevOps World!' in response.data
 
 def test_health_endpoiont(client):
   response = client.get('/health')
